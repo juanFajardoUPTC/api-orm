@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model estudiantes {
+  codigo           Int             @id
+  nombre           String?         @db.VarChar(45)
+  apellido         String?         @db.VarChar(45)
+  tipo_documento   String?         @db.VarChar(45)
+  numero_documento Int?
+  estado           Int?            @db.TinyInt
+  genero           String?         @db.VarChar(45)
+  inscripciones    inscripciones[]
+}
+
+model inscripciones {
+  id_inscripcion    Int         @id @default(autoincrement()) @db.UnsignedInt
+  codigo_estudiante Int
+  codigo_materia    Int
+  fecha_inscripcion DateTime    @db.Date
+  estudiantes       estudiantes @relation(fields: [codigo_estudiante], references: [codigo], onDelete: Cascade, map: "inscripciones_ibfk_1")
+  materias          materias    @relation(fields: [codigo_materia], references: [codigo], onDelete: Cascade, map: "inscripciones_ibfk_2")
+
+  @@index([codigo_estudiante], map: "codigo_estudiante")
+  @@index([codigo_materia], map: "codigo_materia")
+}
+
+model materias {
+  codigo        Int             @id
+  nombre        String?         @db.VarChar(45)
+  cupos         Int?
+  estado        Int?            @db.TinyInt
+  inscripciones inscripciones[]
+}
