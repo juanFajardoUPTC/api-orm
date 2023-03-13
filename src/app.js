@@ -4,6 +4,13 @@ const express = require("express");
 const path = require("path");
 const app = express();
 
+var bodyParser = require('body-parser')
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+
+// parse application/json
+app.use(bodyParser.json())
+
 const { PrismaClient } = require('@prisma/client') 
 const prisma = new PrismaClient()
 
@@ -22,9 +29,9 @@ app.get("/",(req,res)=>{
 
 app.post("/estudiantes/agregar",async (req,res)=>{
     console.log(req.body);
-    // const estudiante = await prisma.estudiantes.create({
-    //     data: req.body
-    // })
+    const estudiante = await prisma.estudiantes.create({
+        data: req.body
+    })
     res.json({})
 })
 
