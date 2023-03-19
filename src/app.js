@@ -54,10 +54,9 @@ app.post("/estudiantes/agregar", async (req, res) => {
 })
 
 
-app.patch("/estudiantes/estado/:codigo", async(req,res) =>{
+app.patch("/estudiantes/estado/cambiar_estado", async(req,res) =>{
     try{
         console.log(req.body);
-        
         const codigo = Number(req.body.codigo);
         const {estado}= req.body;
         const estudiante= await prisma.estudiantes.update({
@@ -92,6 +91,8 @@ app.put("/estudiantes/actualizar/:codigo",async(req,res)=>{
         }
     }
 })
+
+
 const server = app.listen(app.get('port'), () => {
     console.log('Funciona en puerto: ', app.get('port'));
 });
