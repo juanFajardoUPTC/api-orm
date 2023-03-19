@@ -54,15 +54,15 @@ app.post("/estudiantes/agregar", async (req, res) => {
 })
 
 
-app.patch("/estudiantes/estado/:codigo", async(req,res) =>{
+app.patch("/estudiantes/cambiar-estado", async(req,res) =>{
     try{
-        console.log(req.body);
+        console.log('Cuerpo',req.body);
         
         const codigo = Number(req.body.codigo);
-        const {estado}= req.body;
-        const estudiante= await prisma.estudiantes.update({
-            where:{ codigo },
-            data:{estado}
+        const estado= req.body.estado;
+        const estudiante = await prisma.estudiantes.update({
+            where:{ codigo: codigo },
+            data:{estado: estado}
         })
         res.json({ msg: "estado actualizado", estudiante })
     }catch (error){
@@ -74,13 +74,15 @@ app.patch("/estudiantes/estado/:codigo", async(req,res) =>{
         }
     }
 })
-app.put("/estudiantes/actualizar/:codigo",async(req,res)=>{
+app.put("/estudiantes/actualizar",async(req,res)=>{
     try{
         console.log(req.body);
-        const { codigo } = req.params
-        const estudiante = await prisma.estudiantes.update({
-            where: { codigo: Number(codigo) },
-            data: req.body
+        const codigo = req.body.codigo
+        delete req.body.codigo
+        const estudiante = await prisma.estudiantes.upsert({
+            where: { codigo: codigo },
+            update: req.body,
+            create: req.body
         })
         res.json({ msg: "estudiante actualizado", estudiante })
     }catch (error){
