@@ -59,7 +59,7 @@ app.patch("/estudiantes/cambiar_estado", async(req,res) =>{
     try{
         console.log(req.body);
         const codigo = Number(req.body.codigo);
-        const {estado}= req.body.estado;
+        const estado= req.body.estado;
         const estudiante= await prisma.estudiantes.update({
             where:{ codigo :codigo},
             data:{estado:codigo}
