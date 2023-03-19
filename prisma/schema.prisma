@@ -8,13 +8,13 @@ datasource db {
 }
 
 model estudiantes {
-  codigo           Int             @id
-  nombre           String?         @db.VarChar(45)
-  apellido         String?         @db.VarChar(45)
-  tipo_documento   String?         @db.VarChar(45)
-  numero_documento Int?
-  estado           Int?            @db.TinyInt
-  genero           String?         @db.VarChar(45)
+  codigo           Int             @id @default(autoincrement())
+  nombre           String          @db.VarChar(45)
+  apellido         String          @db.VarChar(45)
+  tipo_documento   String          @db.VarChar(45)
+  numero_documento String          @db.VarChar(15)
+  estado           String?         @db.VarChar(1)
+  genero           String?         @db.VarChar(3)
   inscripciones    inscripciones[]
 }
 
@@ -31,9 +31,9 @@ model inscripciones {
 }
 
 model materias {
-  codigo        Int             @id
-  nombre        String?         @db.VarChar(45)
+  codigo        Int             @id @default(autoincrement())
+  nombre        String          @db.VarChar(45)
   cupos         Int?
-  estado        Int?            @db.TinyInt
+  estado        String?         @db.VarChar(1)
   inscripciones inscripciones[]
 }

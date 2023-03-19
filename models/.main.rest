@@ -1,0 +1,14 @@
+
+GET http://localhost:3000
+###
+POST http://localhost:3000/estudiantes/crear
+Content-Type: application/json
+
+{  
+    "nombre": "Juan",
+   "apellido": "Pérez",
+   "tipo_documento": "CC",
+   "numero_documento": "123456789",
+   "estado": "1",
+   "genero": "M"
+}

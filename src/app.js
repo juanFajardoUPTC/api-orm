@@ -14,21 +14,28 @@ app.use(express.static(path.join(__dirname,'public')));
 
 //start
 app.get("/",(req,res)=>{
-    res.json({msg:"hola perra"})
+    res.json({msg:"hola perra BEBE"})
 })
 // Crear un nuevo estudiante
-app.post('/estudiantes', async (req, res) => {
-  const nuevoEstudiante = await prisma.estudiantes.create({
-    data: {
-      nombre: req.body.nombre,
-      apellido: req.body.apellido,
-      tipo_documento: req.body.tipo_documento,
-      numero_documento: req.body.numero_documento,
-      estado: 1,
-      genero: req.body.genero
+app.post('/estudiantes/crear', async (req, res) => {
+    try{
+    console.log(req.body);
+    const { nombre, apellido, tipo_documento, numero_documento, estado, genero } = req.body;
+    const student = await prisma.estudiantes.create({
+        data:{
+            nombre,
+            apellido,
+            tipo_documento,
+            numero_documento,
+            estado,
+            genero
+        },
+    })
+    res.json({msg:"estudiante creado",estudiantes:student})
+    }catch(error){
+        console.error(error);
+        res.status(500).json({ mensaje: 'Error al crear el estudiante' });
     }
-  });
-  res.json(nuevoEstudiante);
 });
 
 // Editar un estudiante existente
