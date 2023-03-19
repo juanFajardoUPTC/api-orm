@@ -57,6 +57,7 @@ app.post("/estudiantes/agregar", async (req, res) => {
 app.patch("/estudiantes/estado/:codigo", async(req,res) =>{
     try{
         console.log(req.body);
+        
         const codigo = Number(req.body.codigo);
         const {estado}= req.body;
         const estudiante= await prisma.estudiantes.update({
@@ -76,9 +77,9 @@ app.patch("/estudiantes/estado/:codigo", async(req,res) =>{
 app.put("/estudiantes/actualizar/:codigo",async(req,res)=>{
     try{
         console.log(req.body);
-        const codigo = Number(req.params.codigo);
+        const { codigo } = req.params
         const estudiante = await prisma.estudiantes.update({
-            where:{codigo},
+            where: { codigo: Number(codigo) },
             data: req.body
         })
         res.json({ msg: "estudiante actualizado", estudiante })
