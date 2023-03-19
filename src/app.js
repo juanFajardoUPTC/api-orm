@@ -57,12 +57,12 @@ app.post("/estudiantes/agregar", async (req, res) => {
 
 app.patch("/estudiantes/cambiar_estado", async(req,res) =>{
     try{
-        console.log(req.body);
+        console.log('Cuerpo',req.body);
         const codigo = Number(req.body.codigo);
         const estado= req.body.estado;
         const estudiante= await prisma.estudiantes.update({
             where:{ codigo :codigo},
-            data:{estado:codigo}
+            data:{estado: codigo}
         })
         res.json({ msg: "estado actualizado", estudiante })
     }catch (error){
