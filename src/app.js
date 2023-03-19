@@ -40,7 +40,6 @@ app.post("/estudiantes/agregar", async (req, res) => {
         console.log(req.body);
         const estudiante = await prisma.estudiantes.create({
             data: req.body
-            
         })
         res.json({ msg: "creado", estudiante })
     } catch (error) {
@@ -55,14 +54,14 @@ app.post("/estudiantes/agregar", async (req, res) => {
 })
 
 
-app.patch("/estudiantes/cambiar_estado", async(req,res) =>{
+app.patch("/estudiantes/cambiar-estado", async(req,res) =>{
     try{
         console.log('Cuerpo',req.body);
-        const codigo = Number(req.body.codigo);
-        const estado= req.body.estado;
-        const estudiante= await prisma.estudiantes.update({
-            where:{ codigo :codigo},
-            data:{estado: codigo}
+        const codigo = req.body.codigo;
+        const estado= Number(req.body.estado);
+        const estudiante = await prisma.estudiantes.update({
+            where:{ codigo: codigo },
+            data:{estado: estado}
         })
         res.json({ msg: "estado actualizado", estudiante })
     }catch (error){
@@ -77,10 +76,10 @@ app.patch("/estudiantes/cambiar_estado", async(req,res) =>{
 app.put("/estudiantes/actualizar",async(req,res)=>{
     try{
         console.log(req.body);
-        const codigo  = req.params.codigo
+        const codigo = req.body.codigo
         delete req.body.codigo
         const estudiante = await prisma.estudiantes.upsert({
-            where: {codigo: codigo},
+            where: { codigo: codigo },
             update: req.body,
             create: req.body
         })
@@ -94,8 +93,6 @@ app.put("/estudiantes/actualizar",async(req,res)=>{
         }
     }
 })
-
-
 const server = app.listen(app.get('port'), () => {
     console.log('Funciona en puerto: ', app.get('port'));
 });
