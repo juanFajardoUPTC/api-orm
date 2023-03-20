@@ -176,27 +176,25 @@ app.get("/inscripciones", async (req, res) => {
     }
 })
 
-/// Falta controlar la excepcion de codigo de estudiante/materia no valido
+/// Excepcion controlada, falta especificar si el dato no valido es de codigo_estudiante o codigo_materia
 app.post("/inscripciones/agregar", async (req, res) => {
     try {
-        console.log(req.body);
+        console.log(req.body);        
         const inscripcion = await prisma.inscripciones.create({
             data: req.body
         })
         res.json({ msg: "creado", inscripcion })
     } catch (error) {
         console.error(error);
-        // Si el error se debe a que se violó una restricción única, responder con un mensaje específico
         if (error.code === "P2002") {
             res.status(400).json({ mensaje: "Ya existe una inscripcion con el mismo id " });
+        } else if (error.code === "P2003"  ) {
+            res.status(500).json({ mensaje: `Datos de estudiante o materia no validos ` });
         } else {
             res.status(500).json({ mensaje: "Error al crear la inscripcion" });
         } 
-        if (error.code === "P2025"){
-            res.status(404).json({ mensaje: `No se encontró una materia con el código ${req.params.codigo_estudiante}` });
-        }
     }
-})
+})  
 
 const server = app.listen(app.get('port'), () => {
     console.log('Funciona en puerto: ', app.get('port'));
