@@ -11,8 +11,8 @@ app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
 
-const { PrismaClient } = require('@prisma/client')
-const prisma = new PrismaClient()
+const { PrismaClient } = require('@prisma/client')  //importa el constructor de prisma clienet desde el moduloulo "'@prisma/client'"
+const prisma = new PrismaClient() //instancia 
 
 
 //config
@@ -23,6 +23,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //start
 ////obtener lista de estudantes ya esta listo
+
 app.get("/estudiantes", async (req, res) => {
     try{
         const estudiantes= await prisma.estudiantes.findMany();
