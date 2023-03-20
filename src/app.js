@@ -35,7 +35,7 @@ app.get("/estudiantes", async (req, res) => {
     
 })
 
-//ya esta listo
+// agregar estudiante 
 app.post("/estudiantes/agregar", async (req, res) => {
     try {
         console.log(req.body);
@@ -75,6 +75,9 @@ app.patch("/estudiantes/cambiar-estado", async(req,res) =>{
         }
     }
 })
+
+
+
 app.put("/estudiantes/actualizar",async(req,res)=>{
     try{
         console.log(req.body);

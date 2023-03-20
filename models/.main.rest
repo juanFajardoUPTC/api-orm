@@ -5,10 +5,10 @@ POST http://localhost:3000/estudiantes/crear
 Content-Type: application/json
 
 {  
-    "nombre": "Juan",
-   "apellido": "Pérez",
+    "nombre": "sergio",
+   "apellido": "soto",
    "tipo_documento": "CC",
-   "numero_documento": "123456789",
+   "numero_documento": "1002364914",
    "estado": "1",
    "genero": "M"
 }
