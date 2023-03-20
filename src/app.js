@@ -14,7 +14,6 @@ app.use(bodyParser.json())
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
-
 //config
 app.set('port', process.env.PORT || 3000);
 
@@ -24,14 +23,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 //start
 ////obtener lista de estudantes ya esta listo
 app.get("/estudiantes", async (req, res) => {
-    try{
-        const estudiantes= await prisma.estudiantes.findMany();
+    try {
+        const estudiantes = await prisma.estudiantes.findMany();
         res.json({ estudiantes })
-    }catch(error){
+    } catch (error) {
         console.error(error);
         res.status(500).json({ mensaje: "Error al obtener la lista de estudiantes" });
     }
-    
+
 })
 
 //ya esta listo
@@ -54,28 +53,28 @@ app.post("/estudiantes/agregar", async (req, res) => {
 })
 
 
-app.patch("/estudiantes/cambiar-estado", async(req,res) =>{
-    try{
-        console.log('Cuerpo',req.body);
-        
+app.patch("/estudiantes/cambiar-estado", async (req, res) => {
+    try {
+        console.log('Cuerpo', req.body);
+
         const codigo = Number(req.body.codigo);
-        const estado= req.body.estado;
+        const estado = req.body.estado;
         const estudiante = await prisma.estudiantes.update({
-            where:{ codigo: codigo },
-            data:{estado: estado}
+            where: { codigo: codigo },
+            data: { estado: estado }
         })
         res.json({ msg: "estado actualizado", estudiante })
-    }catch (error){
+    } catch (error) {
         console.error(error);
         if (error.code === "P2025") {
             res.status(404).json({ mensaje: `No se encontró un estudiante con el código ${req.params.codigo}` });
         } else {
-         res.status(500).json({ mensaje: "Error al actualizar ESTADO el estudiante" });
+            res.status(500).json({ mensaje: "Error al actualizar ESTADO el estudiante" });
         }
     }
 })
-app.put("/estudiantes/actualizar",async(req,res)=>{
-    try{
+app.put("/estudiantes/actualizar", async (req, res) => {
+    try {
         console.log(req.body);
         const codigo = req.body.codigo
         delete req.body.codigo
@@ -85,15 +84,120 @@ app.put("/estudiantes/actualizar",async(req,res)=>{
             create: req.body
         })
         res.json({ msg: "estudiante actualizado", estudiante })
-    }catch (error){
+    } catch (error) {
         console.error(error);
         if (error.code === "P2025") {
             res.status(404).json({ mensaje: `No se encontró un estudiante con el código ${req.params.codigo}` });
         } else {
-         res.status(500).json({ mensaje: "Error al actualizar estudiante" });
+            res.status(500).json({ mensaje: "Error al actualizar estudiante" });
         }
     }
 })
+/// API MATERIAS
+
+app.get("/materias", async (req, res) => {
+    try {
+        const materias = await prisma.materias.findMany();
+        res.json({ materias })
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ mensaje: "Error al obtener la lista de materias" });
+    }
+
+})
+
+app.post("/materias/agregar", async (req, res) => {
+    try {
+        console.log(req.body);
+        const materia = await prisma.materias.create({
+            data: req.body
+        })
+        res.json({ msg: "creado", materia })
+    } catch (error) {
+        console.error(error);
+        // Si el error se debe a que se violó una restricción única, responder con un mensaje específico
+        if (error.code === "P2002") {
+            res.status(400).json({ mensaje: "Ya existe una materia con el mismo código " });
+        } else {
+            res.status(500).json({ mensaje: "Error al crear la materia" });
+        }
+    }
+})
+
+app.patch("/materias/cambiar-estado", async (req, res) => {
+    try {
+        console.log('Cuerpo', req.body);
+
+        const codigo = Number(req.body.codigo);
+        const estado = req.body.estado;
+        const materia = await prisma.materias.update({
+            where: { codigo: codigo },
+            data: { estado: estado }
+        })
+        res.json({ msg: "estado actualizado", materia })
+    } catch (error) {
+        console.error(error);
+        if (error.code === "P2025") {
+            res.status(404).json({ mensaje: `No se encontró una materia con el código ${req.params.codigo}` });
+        } else {
+            res.status(500).json({ mensaje: "Error al actualizar ESTADO de la materia" });
+        }
+    }
+})
+
+app.put("/materias/actualizar", async (req, res) => {
+    try {
+        console.log(req.body);
+        const codigo = req.body.codigo
+        delete req.body.codigo
+        const materia = await prisma.materias.upsert({
+            where: { codigo: codigo },
+            update: req.body,
+            create: req.body
+        })
+        res.json({ msg: "materia actualizada", materia })
+    } catch (error) {
+        console.error(error);
+        if (error.code === "P2025") {
+            res.status(404).json({ mensaje: `No se encontró una materia con el código ${req.params.codigo}` });
+        } else {
+            res.status(500).json({ mensaje: "Error al actualizar materia" });
+        }
+    }
+})
+
+app.get("/inscripciones", async (req, res) => {
+    try {
+        const inscripciones = await prisma.inscripciones.findMany();
+        res.json({ inscripciones })
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ mensaje: "Error al obtener la lista de inscripciones" });
+    }
+})
+
+/// Falta controlar la excepcion de codigo de estudiante/materia no valido
+app.post("/inscripciones/agregar", async (req, res) => {
+    try {
+        console.log(req.body);
+        const inscripcion = await prisma.inscripciones.create({
+            data: req.body
+        })
+        res.json({ msg: "creado", inscripcion })
+    } catch (error) {
+        console.error(error);
+        // Si el error se debe a que se violó una restricción única, responder con un mensaje específico
+        if (error.code === "P2002") {
+            res.status(400).json({ mensaje: "Ya existe una inscripcion con el mismo id " });
+        } else {
+            res.status(500).json({ mensaje: "Error al crear la inscripcion" });
+        } 
+        if (error.code === "P2025"){
+            res.status(404).json({ mensaje: `No se encontró una materia con el código ${req.params.codigo_estudiante}` });
+        }
+    }
+})
+
 const server = app.listen(app.get('port'), () => {
     console.log('Funciona en puerto: ', app.get('port'));
 });
