@@ -28,6 +28,7 @@ model inscripciones {
 
   @@index([codigo_estudiante], map: "codigo_estudiante")
   @@index([codigo_materia], map: "codigo_materia")
+  @@unique([codigo_estudiante,codigo_materia])
 }
 
 model materias {

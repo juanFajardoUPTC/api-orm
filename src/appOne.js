@@ -178,35 +178,40 @@ app.get("/inscripciones", async (req, res) => {
     }
 })
 
-app.post("/materias/agregar", async (req, res) => {
+
+app.post("/agregar/incripciones", async (req, res) => {
     try {
-        console.log(req.body);
-        const materia = await prisma.materias.create({
-            data: req.body
-        })
-        res.json({ msg: "creado", materia })
+        const { codigo_estudiante, codigo_materia } = req.body
+
+        const estudiante = await prisma.estudiantes.findFirstOrThrow({
+            where: {
+                codigo: codigo_estudiante
+            },
+        });
+
+        const materia = await prisma.materias.findFirstOrThrow({
+            where: {
+                codigo: codigo_materia
+            }
+        });
+
+        const inscripcion = await prisma.inscripciones.create({
+            data: {
+                codigo_estudiante: estudiante.codigo,
+                codigo_materia: materia.codigo,
+                fecha_inscripcion: new Date ()
+            }
+        } );
+        res.json({ msg: "creado", inscripcion})
     } catch (error) {
         console.error(error);
-        // Si el error se debe a que se violó una restricción única, responder con un mensaje específico
-        if (error.code === "P2002") {
-            res.status(400).json({ mensaje: "Ya existe una materia con el mismo código " });
-        } else {
-            res.status(500).json({ mensaje: "Error al crear la materia" });
+        if(error.code == "P2025" ){
+             res.status(404).json({mensaje:"uno o más registros que se requieren no se encontraron"});
+        }else{
+            res.status(400).json({mensaje:"ya se encuentra registrado en la asignatura el estudiante"});
         }
     }
-})
-
-app.post("/agregar/incripciones" ,async (req, res)  => {
-    try {
-        const inscripcion = await prisma.inscripciones.create({
-        data: req.body
-        })
-        res.json({ msg: "creado: ", inscripcion })
-    } catch (error) {
-       
-     
-    }
-})
+})  
 
 
 

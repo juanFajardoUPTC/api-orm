@@ -11,8 +11,8 @@ app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
 
-const { PrismaClient } = require('@prisma/client')  //importa el constructor de prisma clienet desde el moduloulo "'@prisma/client'"
-const prisma = new PrismaClient() //instancia 
+const { PrismaClient } = require('@prisma/client')  
+const prisma = new PrismaClient() //
 
 
 //config
