@@ -166,7 +166,6 @@ app.put("/materias/actualizar", async (req, res) => {
 
 //----------------------------------- inscripciones --------------------------------------
 
-
 app.get("/inscripciones", async (req, res) => {
     try {
         const inscripciones = await prisma.inscripciones.findMany();
@@ -215,46 +214,20 @@ app.post("/agregar/incripciones", async (req, res) => {
 })  
 
 
-// no implementado
 app.put("/actualizar/incripcion", async (req, res) => {
     try {
-
-        /*
-        const {codigo_estudiante, codigo_materia} = req.body
-
-        const estudiante = await prisma.estudiantes.findFirstOrThrow({
-            where: {
-                codigo: codigo_estudiante
-            },
-        });
-
-        const materia = await prisma.materias.findFirstOrThrow({
-            where: {
-                codigo: codigo_materia
-            }
-        });
-        */
-        const codigo = req.body.codigo
-        
-        delete req.body.codigo
-        const incripcion = await prisma.materias.upsert({
-            where: { codigo: codigo },
-            update: req.body,
-            create: req.body
-        })
-        res.json({ msg: "materia actualizada", incripcion })
+      const { id_inscripcion } = req.body;
+      const inscripcion = await prisma.inscripciones.upsert({
+        where: { id_inscripcion: id_inscripcion },
+        update: req.body,
+        create: req.body
+      });
+      res.json({ msg: "Inscripción actualizada", inscripcion });
     } catch (error) {
-        console.error(error);
-        if(error.code == "P2025" ){
-             res.status(404).json({mensaje:"uno o más registros que se requieren no se encontraron"});
-        }else if(error.code == "P2002") {
-            res.status(400).json({mensaje:"ya se encuentra registrado en la asignatura el estudiante"});
-        }else{
-            res.status(400).json({mensaje:"error:"});
-        }
+      console.error(error);
+      res.status(500).json({ mensaje: "Error al actualizar la inscripción" });
     }
-})
-
+  });
 
 
 app.listen(3000, ()=>

@@ -77,7 +77,7 @@ app.patch("/estudiantes/cambiar-estado", async(req,res) =>{
 })
 
 
-
+/*
 app.put("/estudiantes/actualizar",async(req,res)=>{
     try{
         console.log(req.body);
@@ -100,4 +100,6 @@ app.put("/estudiantes/actualizar",async(req,res)=>{
 })
 const server = app.listen(app.get('port'), () => {
     console.log('Funciona en puerto: ', app.get('port'));
-});
+});*/
+
+
