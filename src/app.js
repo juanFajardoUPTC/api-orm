@@ -79,7 +79,7 @@ app.put("/estudiantes/actualizar", async (req, res) => {
         const codigo = req.body.codigo
         delete req.body.codigo
         const estudiante = await prisma.estudiantes.upsert({
-            where: { codigo: codigo },
+            where: { codigo: codigo || 0 },
             update: req.body,
             create: req.body
         })
@@ -151,7 +151,7 @@ app.put("/materias/actualizar", async (req, res) => {
         const codigo = req.body.codigo
         delete req.body.codigo
         const materia = await prisma.materias.upsert({
-            where: { codigo: codigo },
+            where: { codigo: codigo || 0 },
             update: req.body,
             create: req.body
         })
