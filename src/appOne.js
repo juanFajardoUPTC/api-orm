@@ -1,36 +1,31 @@
-const express = require("express");
-// const req = require("express/lib/request");
-// const res = require("express/lib/response");
-const path = require("path");
-const app = express();
+const express = require('express');
+const { PrismaClient } = require('@prisma/client')  //importa el constructor de prisma clienet desde el moduloulo "'@prisma/client'"
 
-var bodyParser = require('body-parser')
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }))
 
-// parse application/json
-app.use(bodyParser.json())
 
-const { PrismaClient } = require('@prisma/client')
-const prisma = new PrismaClient()
+const prisma = new PrismaClient() //instancia 
+const app = express()
 
-//config
-app.set('port', process.env.PORT || 3000);
 
-//static
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json()) //middleware convierte de json a javascrid 
 
-//start
-////obtener lista de estudantes ya esta listo
+
+
+app.get('/',(req,res) => {
+    res.send('Prueba')
+}
+)
+
+
 app.get("/estudiantes", async (req, res) => {
-    try {
-        const estudiantes = await prisma.estudiantes.findMany();
+    try{
+        const estudiantes= await prisma.estudiantes.findMany();
         res.json({ estudiantes })
-    } catch (error) {
+    }catch(error){
         console.error(error);
         res.status(500).json({ mensaje: "Error al obtener la lista de estudiantes" });
     }
-
+    
 })
 
 
@@ -53,47 +48,50 @@ app.post("/estudiantes/agregar", async (req, res) => {
 })
 
 
-app.patch("/estudiantes/cambiar-estado", async (req, res) => {
-    try {
-        console.log('Cuerpo', req.body);
-
+app.patch("/estudiantes/cambiar-estado", async(req,res) =>{
+    try{
+        console.log('Cuerpo',req.body);
+        
         const codigo = Number(req.body.codigo);
-        const estado = req.body.estado;
+        const estado= req.body.estado;
         const estudiante = await prisma.estudiantes.update({
-            where: { codigo: codigo },
-            data: { estado: estado }
+            where:{ codigo: codigo },
+            data:{estado: estado}
         })
         res.json({ msg: "estado actualizado", estudiante })
-    } catch (error) {
+    }catch (error){
         console.error(error);
         if (error.code === "P2025") {
             res.status(404).json({ mensaje: `No se encontró un estudiante con el código ${req.params.codigo}` });
         } else {
-            res.status(500).json({ mensaje: "Error al actualizar ESTADO el estudiante" });
+         res.status(500).json({ mensaje: "Error al actualizar ESTADO el estudiante" });
         }
     }
 })
-app.put("/estudiantes/actualizar", async (req, res) => {
-    try {
+
+
+app.put("/estudiantes/actualizar",async(req,res)=>{
+    try{
         console.log(req.body);
         const codigo = req.body.codigo
         delete req.body.codigo
         const estudiante = await prisma.estudiantes.upsert({
-            where: { codigo: codigo || 0 },
+            where: { codigo: codigo },
             update: req.body,
             create: req.body
         })
         res.json({ msg: "estudiante actualizado", estudiante })
-    } catch (error) {
+    }catch (error){
         console.error(error);
         if (error.code === "P2025") {
             res.status(404).json({ mensaje: `No se encontró un estudiante con el código ${req.params.codigo}` });
         } else {
-            res.status(500).json({ mensaje: "Error al actualizar estudiante" });
+         res.status(500).json({ mensaje: "Error al actualizar estudiante" });
         }
     }
 })
-//----------------------------------------------------- API MATERIAS----------------------------------------------
+
+//---------------------------------------materias-------------------------------------------
 
 app.get("/materias", async (req, res) => {
     try {
@@ -151,7 +149,7 @@ app.put("/materias/actualizar", async (req, res) => {
         const codigo = req.body.codigo
         delete req.body.codigo
         const materia = await prisma.materias.upsert({
-            where: { codigo: codigo || 0 },
+            where: { codigo: codigo },
             update: req.body,
             create: req.body
         })
@@ -166,7 +164,7 @@ app.put("/materias/actualizar", async (req, res) => {
     }
 })
 
-//-------------------------------------------------------Api Inscripciones-------------------------
+//----------------------------------- inscripciones --------------------------------------
 
 app.get("/inscripciones", async (req, res) => {
     try {
@@ -181,105 +179,87 @@ app.get("/inscripciones", async (req, res) => {
 
 app.post("/agregar/incripciones", async (req, res) => {
     try {
-        const { codigo_estudiante, codigo_materia, fecha_inscripcion } = req.body
-        console.log('SSSSSSSSSS',req.body);
-        const estudiante = await validateStudent(codigo_estudiante);
-        const materia = await validateMatter(codigo_materia);
+        const {codigo_estudiante, codigo_materia,fecha_inscripcion} = req.body
+
+        const estudiante = await prisma.estudiantes.findUnique({
+            where: {
+                codigo: codigo_estudiante
+            },
+        });
+
+        if (!estudiante) {
+            return res.status(404).json({mensaje:"No se encontró al estudiante registrado"});
+        }
+
+        const materia = await prisma.materias.findUnique({
+            where: {
+                codigo: codigo_materia
+            }
+        });
+
+        if (!materia) {
+            return res.status(404).json({mensaje:"No hay una materia con ese codigo"});
+        }
 
         const inscripcion = await prisma.inscripciones.create({
             data: {
                 codigo_estudiante: estudiante.codigo,
                 codigo_materia: materia.codigo,
-                fecha_inscripcion: new Date(fecha_inscripcion)
-                // fecha_inscripcion: new Date()  // fecha del pc 
+                fecha_inscripcion: new Date (fecha_inscripcion)
+               // fecha_inscripcion: new Date()  // fecha del pc 
             }
-        });
-        res.json({ msg: "creada", inscripcion })
+        } );
+        res.json({ msg: "creada", inscripcion})
     } catch (error) {
         console.error(error);
-        if (error.code == "P2002") {
-            res.status(400).json({ mensaje: "ya se encuentra registrado en la asignatura el estudiante" });
-        } else if (error.message === "No se encontró al estudiante registrado") {
-            res.status(400).json({ mensaje: "No se encontró al estudiante registrado" });
-        } else if(error.message === "No hay una materia con ese codigo") {
-            res.status(400).json({ mensaje: "No se encontró la asignatura" });
+        if(error.code == "P2002") {
+            res.status(400).json({mensaje:"ya se encuentra registrado en la asignatura el estudiante"});
         }else{
-            res.status(500).json({ mensaje: "Error al crear la inscripción" });
+            res.status(500).json({mensaje:"Error al crear la inscripción"});
         }
     }
-})
-
-
-
-
-async function validateStudent(codigo_estudiante) {
-    const estudiante = await prisma.estudiantes.findUnique({
-        where: {
-            codigo: codigo_estudiante,
-        },
-    });
-    if (!estudiante) {
-        throw new Error("No se encontró al estudiante registrado");
-    }
-    return estudiante;
-}
-
-
-async function validateMatter(codigo_materia) {
-    const materia = await prisma.materias.findUnique({
-        where: {
-            codigo: codigo_materia,
-        },
-    });
-    if (!materia) {
-        throw new Error("No hay una materia con ese codigo");
-    }
-    return materia;
-}
+})  
 
 
 app.put("/actualizar/incripcion", async (req, res) => {
     try {
-        const { id_inscripcion, codigo_estudiante, codigo_materia } = req.body;
-        delete req.body.id_inscripcion
-        await validateStudent(codigo_estudiante);
-        await validateMatter(codigo_materia);
-        const inscripcion = await prisma.inscripciones.upsert({
-            where: { id_inscripcion: id_inscripcion  || 0 }, 
-            update: req.body,
-            create: req.body
-        });
-        res.json({ msg: "Inscripción actualizada", inscripcion });
+      const { id_inscripcion } = req.body;
+      delete req.body.id_inscripcion
+      const inscripcion = await prisma.inscripciones.upsert({
+        where: { id_inscripcion: id_inscripcion },
+        update: req.body,
+        create: req.body
+      });
+      res.json({ msg: "Inscripción actualizada", inscripcion });
     } catch (error) {
         console.error(error);
-        if (error.code == "P2002") {
-            res.status(400).json({ mensaje: "ya se encuentra registardo el estudiante en la asignatura (no se puede realizar otra inscripcion)" });
-        } else if (error.message === "No se encontró al estudiante registrado") {
-            res.status(400).json({ mensaje: "No se encontró al estudiante registrado" });
-        } else if (error.message === "No hay una materia con ese codigo") {
-            res.status(400).json({ mensaje: "No se encontró la asignatura" });
-        } else {
+        if(error.code = "P2002"){
+            res.status(400).json({ mensaje: "ya se encuentra registardo el estudiante en la asignatura" });
+        }else{
             res.status(500).json({ mensaje: "Error al actualizar la inscripción" });
         }
     }
-});
+  });
 
 
+  app.patch("/materias/cambiar-estado", async (req, res) => {
+
+  })
 
 // no lo veo necesario mjero implementar en la base un esatdo si esta activo o inactivo como si cancelara 
-app.patch("/inscripcion/cambiar-fecha", async (req, res) => {
+  app.patch("/inscripcion/cambiar-fecha", async (req, res) => {
     try {
         console.log('Cuerpo', req.body);
-        const { id_inscripcion, fecha_inscripcion } = req.body;
+        const{id_inscripcion,fecha_inscripcion} = req.body;
         const incripcion = await prisma.inscripciones.update({
             where: { id_inscripcion: id_inscripcion },
-            data: { fecha_inscripcion: new Date(fecha_inscripcion) }
+            data: { fecha_inscripcion: new Date (fecha_inscripcion) }
         })
-        res.json({ msg: "fecha actualizada", incripcion })
+        res.json({ msg: "fecha actualizada", incripcion})
     } catch (error) {
         console.error(error);
         if (error.code === "P2025") {
-            res.status(404).json({ mensaje: 'No se encontró la inscripcion' });
+            res.status(404).json({ mensaje: `No se encontró una inscripcion con el código ${req.params.codigo}` });
         } else {
             res.status(500).json({ mensaje: "Error al actualizar la fecha  de la inscripcion" });
         }
@@ -287,6 +267,10 @@ app.patch("/inscripcion/cambiar-fecha", async (req, res) => {
 })
 
 
-const server = app.listen(app.get('port'), () => {
-    console.log('Funciona en puerto: ', app.get('port'));
-});
+
+app.listen(3000, ()=>
+     console.log('Aplicacion en ejecucion')
+);
+
+
+

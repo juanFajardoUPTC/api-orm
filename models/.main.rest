@@ -5,13 +5,12 @@ POST http://localhost:3000/estudiantes/agregar
 Content-Type: application/json
 
 {  
-    "codigo":1,
-    "nombre": "Juan",
-    "apellido": "Pérez",
-    "tipo_documento": "CC",
-    "numero_documento": "123456789",
-    "estado": "1",
-    "genero": "M"
+    "nombre": "sergio",
+   "apellido": "soto",
+   "tipo_documento": "CC",
+   "numero_documento": "1002364914",
+   "estado": "1",
+   "genero": "M"
 }
 ###
 GET http://localhost:3000/materias
