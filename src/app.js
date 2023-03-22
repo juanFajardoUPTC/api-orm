@@ -182,7 +182,7 @@ app.get("/inscripciones", async (req, res) => {
 app.post("/agregar/incripciones", async (req, res) => {
     try {
         const { codigo_estudiante, codigo_materia, fecha_inscripcion } = req.body
-
+        console.log('SSSSSSSSSS',req.body);
         const estudiante = await validateStudent(codigo_estudiante);
         const materia = await validateMatter(codigo_materia);
 
@@ -245,7 +245,7 @@ app.put("/actualizar/incripcion", async (req, res) => {
         await validateStudent(codigo_estudiante);
         await validateMatter(codigo_materia);
         const inscripcion = await prisma.inscripciones.upsert({
-            where: { id_inscripcion: id_inscripcion },
+            where: { id_inscripcion: id_inscripcion  || 0 }, 
             update: req.body,
             create: req.body
         });
