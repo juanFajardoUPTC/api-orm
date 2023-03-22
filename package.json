@@ -2,7 +2,7 @@
   "name": "api-orm",
   "version": "1.0.0",
   "description": "",
-  "main": "src/appOne.js",
+  "main": "src/app.js",
   "scripts": {
     "dev": "npx nodemon ."
   },

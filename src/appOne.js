@@ -179,7 +179,7 @@ app.get("/inscripciones", async (req, res) => {
 
 app.post("/agregar/incripciones", async (req, res) => {
     try {
-        const {codigo_estudiante, codigo_materia} = req.body
+        const {codigo_estudiante, codigo_materia,fecha_inscripcion} = req.body
 
         const estudiante = await prisma.estudiantes.findUnique({
             where: {
@@ -188,7 +188,7 @@ app.post("/agregar/incripciones", async (req, res) => {
         });
 
         if (!estudiante) {
-            return res.status(404).json({mensaje:"No se encontró al estudiante"});
+            return res.status(404).json({mensaje:"No se encontró al estudiante registrado"});
         }
 
         const materia = await prisma.materias.findUnique({
@@ -198,14 +198,15 @@ app.post("/agregar/incripciones", async (req, res) => {
         });
 
         if (!materia) {
-            return res.status(404).json({mensaje:"No se encontró la materia con el código proporcionado"});
+            return res.status(404).json({mensaje:"No hay una materia con ese codigo"});
         }
 
         const inscripcion = await prisma.inscripciones.create({
             data: {
                 codigo_estudiante: estudiante.codigo,
                 codigo_materia: materia.codigo,
-                fecha_inscripcion: new Date ()
+                fecha_inscripcion: new Date (fecha_inscripcion)
+               // fecha_inscripcion: new Date()  // fecha del pc 
             }
         } );
         res.json({ msg: "creada", inscripcion})
@@ -223,6 +224,7 @@ app.post("/agregar/incripciones", async (req, res) => {
 app.put("/actualizar/incripcion", async (req, res) => {
     try {
       const { id_inscripcion } = req.body;
+      delete req.body.id_inscripcion
       const inscripcion = await prisma.inscripciones.upsert({
         where: { id_inscripcion: id_inscripcion },
         update: req.body,
@@ -230,10 +232,40 @@ app.put("/actualizar/incripcion", async (req, res) => {
       });
       res.json({ msg: "Inscripción actualizada", inscripcion });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ mensaje: "Error al actualizar la inscripción" });
+        console.error(error);
+        if(error.code = "P2002"){
+            res.status(400).json({ mensaje: "ya se encuentra registardo el estudiante en la asignatura" });
+        }else{
+            res.status(500).json({ mensaje: "Error al actualizar la inscripción" });
+        }
     }
   });
+
+
+  app.patch("/materias/cambiar-estado", async (req, res) => {
+
+  })
+
+// no lo veo necesario mjero implementar en la base un esatdo si esta activo o inactivo como si cancelara 
+  app.patch("/inscripcion/cambiar-fecha", async (req, res) => {
+    try {
+        console.log('Cuerpo', req.body);
+        const{id_inscripcion,fecha_inscripcion} = req.body;
+        const incripcion = await prisma.inscripciones.update({
+            where: { id_inscripcion: id_inscripcion },
+            data: { fecha_inscripcion: new Date (fecha_inscripcion) }
+        })
+        res.json({ msg: "fecha actualizada", incripcion})
+    } catch (error) {
+        console.error(error);
+        if (error.code === "P2025") {
+            res.status(404).json({ mensaje: `No se encontró una inscripcion con el código ${req.params.codigo}` });
+        } else {
+            res.status(500).json({ mensaje: "Error al actualizar la fecha  de la inscripcion" });
+        }
+    }
+})
+
 
 
 app.listen(3000, ()=>
