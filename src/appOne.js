@@ -181,17 +181,25 @@ app.post("/agregar/incripciones", async (req, res) => {
     try {
         const {codigo_estudiante, codigo_materia} = req.body
 
-        const estudiante = await prisma.estudiantes.findFirstOrThrow({
+        const estudiante = await prisma.estudiantes.findUnique({
             where: {
                 codigo: codigo_estudiante
             },
         });
 
-        const materia = await prisma.materias.findFirstOrThrow({
+        if (!estudiante) {
+            return res.status(404).json({mensaje:"No se encontró al estudiante"});
+        }
+
+        const materia = await prisma.materias.findUnique({
             where: {
                 codigo: codigo_materia
             }
         });
+
+        if (!materia) {
+            return res.status(404).json({mensaje:"No se encontró la materia con el código proporcionado"});
+        }
 
         const inscripcion = await prisma.inscripciones.create({
             data: {
@@ -203,12 +211,10 @@ app.post("/agregar/incripciones", async (req, res) => {
         res.json({ msg: "creada", inscripcion})
     } catch (error) {
         console.error(error);
-        if(error.code == "P2025" ){
-             res.status(404).json({mensaje:"uno o más registros que se requieren no se encontraron"});
-        }else if(error.code == "P2002") {
+        if(error.code == "P2002") {
             res.status(400).json({mensaje:"ya se encuentra registrado en la asignatura el estudiante"});
         }else{
-            res.status(400).json({mensaje:"error:"});
+            res.status(500).json({mensaje:"Error al crear la inscripción"});
         }
     }
 })  
