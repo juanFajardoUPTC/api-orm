@@ -111,25 +111,25 @@ app.get('/estudiantes/orden', async (req, res) => {
   })
 
   app.get('/estudiantes/filtro', async (req, res) => {
-    try {
-      const { codigo, apellido, nombre, tipo_documento,numero_documento,estado,genero } = req.query;
-      const estudiantes = await prisma.estudiante.findMany({
-        where: {
-          AND: [
-            codigo ? { codigo } : null,
-            apellido ? { apellido: { contains: apellido } } : null,
-            nombre ? { nombre: { contains: nombre } } : null,
-            tipo_documento? {tipo_documento:{ contains:tipo_documento}}:null,
-            numero_documento? {numero_documento:{contains:numero_documento}}:null,
-            estado?{estado:{contains:estado}}:null,
-            genero?{genero:{contains:genero}}:null,
-          ].filter(Boolean),
+    try { 
+      const { codigo, apellido, nombre, tipo_documento,numero_documento,estado,genero } = req.query; //parámetros de consulta
+      const estudiantes = await prisma.estudiantes.findMany({ // Consulta a la base de datos utilizando Prisma
+        where: { // Se especifica el criterio de búsqueda
+          AND: [ // Se utilizan varios criterios AND para filtrar los estudiantes
+            codigo ? { codigo } : null, // Si el parámetro codigo existe, se agrega el criterio de búsqueda al objeto, sino se agrega un valor nulo
+            apellido ? { apellido: { contains: apellido } } : null, 
+            nombre ? { nombre: { contains: nombre } } : null, 
+            tipo_documento? {tipo_documento:{ contains:tipo_documento}}:null, 
+            numero_documento? {numero_documento:{contains:numero_documento}}:null, 
+            estado?{estado:{contains:estado}}:null, 
+            genero?{genero:{contains:genero}}:null, 
+          ].filter(Boolean), // Se filtran los valores nulos del arreglo de criterios
         },
       });
-      res.json(estudiantes);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ mensaje: 'Error al obtener la lista de estudiantes' });
+      res.json(estudiantes); // Se envían los estudiantes encontrados
+    } catch (error) { 
+      console.error(error); 
+      res.status(500).json({ mensaje: 'Error al obtener la lista de estudiantes' }); 
     }
   });
 //----------------------------------------------------- API MATERIAS----------------------------------------------
