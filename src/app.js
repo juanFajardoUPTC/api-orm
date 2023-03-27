@@ -22,7 +22,6 @@ app.use('/estudiantes',workEstiantes);
 app.use('/materias',workMaterias);
 app.use('/inscripciones',workIncripciones);
 
-
 const server = app.listen(app.get('port'), () => {
     console.log('Funciona en puerto: ', app.get('port'));
 });

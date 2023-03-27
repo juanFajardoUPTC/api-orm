@@ -68,19 +68,36 @@ const putActualizar = async (req, res) => {
     }
 }
 const getOrden = async (req, res) => {
-    try {
-        const { ordenarPor } = req.query
+    try {/// recibe la colunma y el tipo de ordenamiento y falta hacer la busqueda por el parametro 'busqueda' 
+        const { colunma,orden,busqueda} = req.params
         const estudiantes = await prisma.estudiantes.findMany({
           orderBy: {
-            [ordenarPor]: 'asc'
-          }
-        })
-        res.json(estudiantes)
+            [colunma]: orden    
+          }});
+          if(busqueda){
+            estudiantes = await prisma.estudiantes.findMany({
+                where: {
+                    AND: [
+                        codigo ? { codigo } : null, // Si el parámetro codigo existe, se agrega el criterio de búsqueda al objeto, sino se agrega un valor nulo
+                        apellido ? { apellido: { contains: apellido } } : null, 
+                        nombre ? { nombre: { contains: nombre } } : null, 
+                        tipo_documento? {tipo_documento:{ contains:tipo_documento}}:null, 
+                        numero_documento? {numero_documento:{contains:numero_documento}}:null, 
+                        estado?{estado:{contains:estado}}:null, 
+                        genero?{genero:{contains:genero}}:null, 
+                    ].filter(Boolean)
+                },
+                orderBy:{
+                    [columna]: orden
+                }
+            });
+          }res.json(estudiantes)
       } catch (error) {
         console.error(error)
         res.status(500).json({ mensaje: 'Error al obtener la lista de estudiantes' })
       }
 }
+
 const getFiltro = async (req, res) => {
     try { 
         const { codigo, apellido, nombre, tipo_documento,numero_documento,estado,genero } = req.query; //parámetros de consulta
