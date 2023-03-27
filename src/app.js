@@ -17,8 +17,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const workEstiantes= require('./routes/routerEstudiantes');
 const workMaterias= require('./routes/routerMaterias');
+const workIncripciones= require('./routes/routerInscripciones');
 app.use('/estudiantes',workEstiantes);
 app.use('/materias',workMaterias);
+app.use('/inscripciones',workIncripciones);
 
 
 const server = app.listen(app.get('port'), () => {
