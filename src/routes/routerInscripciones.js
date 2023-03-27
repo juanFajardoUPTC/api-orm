@@ -1,5 +1,5 @@
 const express =require("express");
-const router = express.router();
+const router = express.Router();
 const controllersInscripxiones = require('../controllers/inscripciones');
 
 router.get('/',controllersInscripxiones.getInscripciones)
@@ -7,3 +7,4 @@ router.get('/',controllersInscripxiones.getInscripciones)
       .put('/:actualizar',controllersInscripxiones.putActualizarInscripcion)
       .patch(':/cambiar-fecha',controllersInscripxiones.patchtcambiarFecha)
 ;
+module.exports = router; 
