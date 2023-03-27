@@ -53,6 +53,7 @@ app.post("/estudiantes/agregar", async (req, res) => {
 })
 
 
+
 app.patch("/estudiantes/cambiar-estado", async (req, res) => {
     try {
         console.log('Cuerpo', req.body);
@@ -93,6 +94,44 @@ app.put("/estudiantes/actualizar", async (req, res) => {
         }
     }
 })
+app.get('/estudiantes/orden', async (req, res) => {
+    try {
+      const { ordenarPor } = req.query
+      const estudiantes = await prisma.estudiantes.findMany({
+        orderBy: {
+          [ordenarPor]: 'asc'
+        }
+      })
+  
+      res.json(estudiantes)
+    } catch (error) {
+      console.error(error)
+      res.status(500).json({ mensaje: 'Error al obtener la lista de estudiantes' })
+    }
+  })
+
+  app.get('/estudiantes/filtro', async (req, res) => {
+    try {
+      const { codigo, apellido, nombre, tipo_documento,numero_documento,estado,genero } = req.query;
+      const estudiantes = await prisma.estudiante.findMany({
+        where: {
+          AND: [
+            codigo ? { codigo } : null,
+            apellido ? { apellido: { contains: apellido } } : null,
+            nombre ? { nombre: { contains: nombre } } : null,
+            tipo_documento? {tipo_documento:{ contains:tipo_documento}}:null,
+            numero_documento? {numero_documento:{contains:numero_documento}}:null,
+            estado?{estado:{contains:estado}}:null,
+            genero?{genero:{contains:genero}}:null,
+          ].filter(Boolean),
+        },
+      });
+      res.json(estudiantes);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ mensaje: 'Error al obtener la lista de estudiantes' });
+    }
+  });
 //----------------------------------------------------- API MATERIAS----------------------------------------------
 
 app.get("/materias", async (req, res) => {
