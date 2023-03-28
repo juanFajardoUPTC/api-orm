@@ -47,6 +47,13 @@ const getEstudiantes = async (req, res) => {
         res.status(500).json({ mensaje: "Error al obtener la lista de estudiantes" });
     }
 };
+/**  try {
+        const estudiantes = await prisma.estudiantes.findMany();
+        res.json({ estudiantes })
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ mensaje: "Error al obtener la lista de estudiantes" });
+    } */
 const postAgrearEstudiante = async (req, res) => {
     try {
         console.log(req.body);
