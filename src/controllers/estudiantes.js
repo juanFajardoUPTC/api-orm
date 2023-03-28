@@ -68,35 +68,36 @@ const putActualizar = async (req, res) => {
     }
 }
 const getOrden = async (req, res) => {
-    try {/// recibe la colunma y el tipo de ordenamiento y falta hacer la busqueda por el parametro 'busqueda' 
-        const { colunma,orden,busqueda} = req.params
-        const estudiantes = await prisma.estudiantes.findMany({
-          orderBy: {
-            [colunma]: orden    
-          }});
-          if(busqueda){
-            estudiantes = await prisma.estudiantes.findMany({
-                where: {
-                    AND: [
-                        codigo ? { codigo } : null, // Si el parámetro codigo existe, se agrega el criterio de búsqueda al objeto, sino se agrega un valor nulo
-                        apellido ? { apellido: { contains: apellido } } : null, 
-                        nombre ? { nombre: { contains: nombre } } : null, 
-                        tipo_documento? {tipo_documento:{ contains:tipo_documento}}:null, 
-                        numero_documento? {numero_documento:{contains:numero_documento}}:null, 
-                        estado?{estado:{contains:estado}}:null, 
-                        genero?{genero:{contains:genero}}:null, 
-                    ].filter(Boolean)
-                },
-                orderBy:{
-                    [columna]: orden
-                }
-            });
-          }res.json(estudiantes)
-      } catch (error) {
-        console.error(error)
-        res.status(500).json({ mensaje: 'Error al obtener la lista de estudiantes' })
+    try {
+      const { columna, orden = 'asc' ||'desc', busqueda } = req.query;
+      const orderBy = { [columna]: orden };
+      let where = {};
+      if (busqueda) {
+        const { codigo, apellido, nombre, tipo_documento, numero_documento, estado, genero } = req.query;
+        where = {
+          AND: [
+            codigo ? { codigo: { contains: codigo } } : null,
+            apellido ? { apellido: { contains: apellido } } : null,
+            nombre ? { nombre: { contains: nombre } } : null,
+            tipo_documento ? { tipo_documento: { contains: tipo_documento } } : null,
+            numero_documento ? { numero_documento: { contains: numero_documento } } : null,
+            estado ? { estado: { contains: estado } } : null,
+            genero ? { genero: { contains: genero } } : null,
+          ].filter(Boolean),
+        };
       }
-}
+  
+      const estudiantes = await prisma.estudiantes.findMany({
+        where,
+        orderBy,
+      });
+      
+      res.json(estudiantes);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ mensaje: 'Error al obtener la lista de estudiantes' });
+    }
+  };
 
 const getFiltro = async (req, res) => {
     try { 
