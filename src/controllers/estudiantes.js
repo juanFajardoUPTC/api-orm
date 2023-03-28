@@ -9,9 +9,7 @@ const getEstudiantes = async (req, res) => {
         } else {
             // Hay parámetros en la solicitud
             const { columna, orden = 'asc' || 'desc', busqueda } = req.query;
-
             let estudiantes = [];
-
             if (busqueda) {
                 const { codigo, apellido, nombre, tipo_documento, numero_documento, estado, genero } = req.query;
                 estudiantes = await prisma.estudiantes.findMany({
@@ -37,10 +35,8 @@ const getEstudiantes = async (req, res) => {
                     },
                 });
             }
-
             res.json(estudiantes);
         }
-
 
     } catch (error) {
         console.error(error);
