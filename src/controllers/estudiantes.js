@@ -4,11 +4,105 @@ const getEstudiantes = async (req, res) => {
     try {
         if (Object.keys(req.query).length === 0) {
             // No hay parámetros en la solicitud
+            const estudiantesOne = await prisma.estudiantes.findMany();
+            res.json(estudiantesOne);
+            console.log('entre en estudiantes 1');
+        } else {
+            console.log(req.query);
+            // Hay parámetros en la solicitud
+            const { columna, ordenamiento, busqueda } = req.query;
+            let estudiantesTwo = [];
+            console.log('entre en estudiantes 2');
+            if (busqueda) {
+                console.log('entre en estudiantes 2.1');
+                const { codigo, apellido, nombre, tipo_documento, numero_documento, estado, genero } = req.query;
+                estudiantesTwo = await prisma.estudiantes.findMany({
+                    where: {
+                        AND: [
+                            codigo && { codigo: { contains: codigo } },
+                            apellido && { apellido: { contains: apellido } },
+                            nombre && { nombre: { contains: nombre } },
+                            tipo_documento && { tipo_documento: { contains: tipo_documento } },
+                            numero_documento && { numero_documento: { contains: numero_documento } },
+                            estado && { estado: { contains: estado } },
+                            genero && { genero: { contains: genero } }
+                          ].filter(Boolean),
+                    },
+                    orderBy: {
+                        [columna]: ordenamiento,
+                    },
+                });
+                res.json(estudiantesTwo);
+                console.log(estudiantesTwo);
+            } else {
+                const estudiantesOne = await prisma.estudiantes.findMany({
+                    orderBy: {
+                        [columna]: ordenamiento,
+                    },
+                });
+                res.json(estudiantesOne);
+            }
+        }
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ mensaje: "Error al obtener la lista de estudiantes" });
+    }
+}
+
+
+/**     try {
+        if (Object.keys(req.query).length === 0) {
+            // No hay parámetros en la solicitud
+            const estudiantes = await prisma.estudiantes.findMany();
+            res.json(estudiantes);
+        } else {
+            console.log(req.query); 
+            // Hay parámetros en la solicitud
+
+            const { columna, orden = 'desc' || 'asc', busqueda } = req.query;
+            let estudiantes = [];
+            if (busqueda) {
+                const { codigo, apellido, nombre, tipo_documento, numero_documento, estado, genero } = req.query;
+                const estudiantes = await prisma.estudiantes.findMany({
+                    where: {
+                      OR: [
+                        codigo ? { codigo: { contains: busqueda } } : null,
+                        apellido ? { apellido: { contains: busqueda } } : null,
+                        nombre ? { nombre: { contains: busqueda } } : null,
+                        tipo_documento ? { tipo_documento: { contains: busqueda } } : null,
+                        numero_documento ? { numero_documento: { contains: busqueda } } : null,
+                        estado ? { estado: { contains: busqueda } } : null,
+                        genero ? { genero: { contains: busqueda } } : null,
+                      ].filter(Boolean),
+                    },
+                    orderBy: {
+                        [columna]: orden,
+                    },
+                  }); 
+            } else {
+                estudiantes = await prisma.estudiantes.findMany({
+                    orderBy: {
+                        [columna]: orden,
+                    },
+                });
+            }
+            res.json(estudiantes);
+        }
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ mensaje: "Error al obtener la lista de estudiantes" });
+    }
+};*/
+/**   try {
+        if (Object.keys(req.query).length === 0) {
+            // No hay parámetros en la solicitud
             const estudiantes = await prisma.estudiantes.findMany();
             res.json(estudiantes);
         } else {
             // Hay parámetros en la solicitud
-            const { columna, orden = 'asc' || 'desc', busqueda } = req.query;
+            const { columna, orden = 'desc' || 'asc', busqueda } = req.query;
             let estudiantes = [];
             if (busqueda) {
                 const { codigo, apellido, nombre, tipo_documento, numero_documento, estado, genero } = req.query;
@@ -41,8 +135,7 @@ const getEstudiantes = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ mensaje: "Error al obtener la lista de estudiantes" });
-    }
-};
+    }*/
 /**  try {
         const estudiantes = await prisma.estudiantes.findMany();
         res.json({ estudiantes })
