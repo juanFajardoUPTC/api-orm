@@ -33,7 +33,7 @@ const getEstudiantes = async (req, res) => {
                     },
                 });
                 res.json(estudiantesTwo);
-                console.log(estudiantesTwo);
+                //console.log(estudiantesTwo);
             } else {
                 const estudiantesOne = await prisma.estudiantes.findMany({
                     orderBy: {
