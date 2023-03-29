@@ -3,13 +3,54 @@ const prisma = new PrismaClient()
 
 const getInscripciones = async (req, res) => {
     try {
-        const inscripciones = await prisma.inscripciones.findMany();
-        res.json({ inscripciones })
+      if (Object.keys(req.query).length === 0) {
+        const incripcionOne = await prisma.inscripciones.findMany();
+        res.json(incripcionOne);
+      } else {
+        const { columna, ordenamiento, busqueda } = req.query;
+        if (busqueda) {
+          if (/^\d{4}-\d{2}-\d{2}$/.test(busqueda)) {
+            const fecha = new Date(busqueda);
+            const incripcionTwo = await prisma.inscripciones.findMany({
+                where: {
+                    OR: [
+                        { fecha_inscripcion: { equals: fecha } },
+                    ]
+                },
+              orderBy: {
+                [columna]: ordenamiento,
+              },
+            });
+            res.json(incripcionTwo);
+          } else if (Number.isInteger(parseInt(busqueda))) {
+            const incripcionT = await prisma.inscripciones.findMany({
+              where: {
+                OR: [
+                  { id_inscripcion: { equals: parseInt(busqueda) } },
+                  { codigo_estudiante: { equals: parseInt(busqueda) } },
+                  { codigo_materia: { equals: parseInt(busqueda) } },
+                ]
+              },
+            });
+            res.json(incripcionT);
+          } else {
+            res.status(400).json({ mensaje: "La cadena de búsqueda no es válida" });
+          }
+        } else {
+          const incripcionOne = await prisma.inscripciones.findMany({
+            orderBy: {
+              [columna]: ordenamiento,
+            },
+          });
+          res.json(incripcionOne);
+        }
+      }
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ mensaje: "Error al obtener inscripciones" });
+      console.error(error);
+      res.status(500).json({ mensaje: "Error al obtener la lista de estudiantes" });
     }
-}
+  }
+  
 async function validateStudent(codigo_estudiante) {
     const estudiante = await prisma.estudiantes.findUnique({
         where: {
