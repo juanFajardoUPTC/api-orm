@@ -251,13 +251,14 @@ const getOrden = async (req, res) => {
     }
 };
 
+
 const getFiltro = async (req, res) => {
     try {
         const { codigo, apellido, nombre, tipo_documento, numero_documento, estado, genero } = req.query; //parámetros de consulta
         const estudiantes = await prisma.estudiantes.findMany({ // Consulta a la base de datos utilizando Prisma
             where: { // Se especifica el criterio de búsqueda
                 AND: [ // Se utilizan varios criterios AND para filtrar los estudiantes
-                    codigo ? { codigo } : null, // Si el parámetro codigo existe, se agrega el criterio de búsqueda al objeto, sino se agrega un valor nulo
+                    codigo ? { codigo: parseInt(codigo) } : null,// Si el parámetro codigo existe, se agrega el criterio de búsqueda al objeto, sino se agrega un valor nulo
                     apellido ? { apellido: { contains: apellido } } : null,
                     nombre ? { nombre: { contains: nombre } } : null,
                     tipo_documento ? { tipo_documento: { contains: tipo_documento } } : null,
