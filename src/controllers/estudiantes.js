@@ -1,48 +1,67 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
+
 const getEstudiantes = async (req, res) => {
     try {
-        if (Object.keys(req.query).length === 0) {
-            // No hay parámetros en la solicitud
-            const estudiantesOne = await prisma.estudiantes.findMany();
-            res.json(estudiantesOne);
-            console.log('entre en estudiantes 1');
-        } else {
-            console.log(req.query);
-            // Hay parámetros en la solicitud
-            const { columna, ordenamiento, busqueda } = req.query;
-            let estudiantesTwo = [];
-            console.log('entre en estudiantes 2');
-            if (busqueda) {
-                console.log('entre en estudiantes 2.1');
-                const { codigo, apellido, nombre, tipo_documento, numero_documento, estado, genero } = req.query;
-                estudiantesTwo = await prisma.estudiantes.findMany({
-                    where: {
-                        AND: [
-                            codigo && { codigo: { contains: codigo } },
-                            apellido && { apellido: { contains: apellido } },
-                            nombre && { nombre: { contains: nombre } },
-                            tipo_documento && { tipo_documento: { contains: tipo_documento } },
-                            numero_documento && { numero_documento: { contains: numero_documento } },
-                            estado && { estado: { contains: estado } },
-                            genero && { genero: { contains: genero } }
-                          ].filter(Boolean),
-                    },
-                    orderBy: {
-                        [columna]: ordenamiento,
-                    },
-                });
-                res.json(estudiantesTwo);
-                console.log(estudiantesTwo);
-            } else {
-                const estudiantesOne = await prisma.estudiantes.findMany({
-                    orderBy: {
-                        [columna]: ordenamiento,
-                    },
-                });
-                res.json(estudiantesOne);
-            }
-        }
+    if (Object.keys(req.query).length === 0) {
+        // No hay parámetros en la solicitud
+        const estudiantesOne = await prisma.estudiantes.findMany();
+        res.json(estudiantesOne);
+        console.log('entre en estudiantes 1');
+    } else {
+    console.log(req.query);
+    // Hay parámetros en la solicitud
+    const { columna, ordenamiento, busqueda } = req.query;
+    
+
+    // let estudiantesTwo = [];
+    console.log('entre en estudiantes 2');
+    if (busqueda) {
+    console.log('entre en estudiantes 2.1');
+
+    const { codigo, apellido, nombre, tipo_documento, numero_documento, estado, genero } = busqueda;
+    console.log('busqueda', busqueda);
+    if (typeof busqueda === 'string') {
+        estudiantesTwo = await prisma.estudiantes.findMany({
+            where: {
+                OR: [
+                    { nombre: { contains: busqueda } },
+                    { apellido: { contains: busqueda } },
+                    { tipo_documento: { contains: busqueda } },
+                    { numero_documento: { contains: busqueda } },
+                    { estado: { contains: busqueda } },
+                    { genero: { contains: busqueda } },
+
+
+                ]
+            },
+            orderBy: {
+                [columna]: ordenamiento,
+            },
+        });
+        res.json(estudiantesTwo);
+    } else if(typeof busqueda === 'integer'){
+        estudiantesT = await prisma.estudiantes.findMany({
+            where: {
+                OR: [
+                    { codigo: { contains: parseInt(busqueda) } }
+                ]
+            },
+        });
+        res.json(estudiantesT);
+    }
+
+
+    console.log('est', estudiantesTwo);
+    } else {
+        // const estudiantesOne = await prisma.estudiantes.findMany({
+        //     orderBy: {
+        //         [columna]: ordenamiento,
+        //     },
+        // });
+        // res.json(estudiantesOne);
+    }
+    }
 
     } catch (error) {
         console.error(error);
