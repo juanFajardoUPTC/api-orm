@@ -12,6 +12,8 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
+
+//config
 app.set('port', process.env.PORT || 3000);
 app.use(express.static(path.join(__dirname, 'public')));
 

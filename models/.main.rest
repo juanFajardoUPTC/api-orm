@@ -1,14 +1,41 @@
 
-GET http://localhost:3000
+GET http://localhost:3000/estudiantes
 ###
-POST http://localhost:3000/estudiantes/crear
+POST http://localhost:3000/estudiantes/agregar
 Content-Type: application/json
 
 {  
-    "nombre": "Juan",
-   "apellido": "Pérez",
+    "nombre": "sergio",
+   "apellido": "soto",
    "tipo_documento": "CC",
-   "numero_documento": "123456789",
+   "numero_documento": "1002364914",
    "estado": "1",
    "genero": "M"
+}
+###
+GET http://localhost:3000/materias
+
+###
+POST http://localhost:3000/materias/agregar
+Content-Type: application/json
+
+{  
+    "codigo":168,
+    "nombre": "Sistemass bd",
+    "cupos": 8,
+    "estado": "b"
+}
+
+###
+GET http://localhost:3000/inscripciones
+
+###
+POST http://localhost:3000/inscripciones/agregar
+Content-Type: application/json
+
+{
+    "id_inscripcion" : 1,
+    "codigo_estudiante"  : 1,
+    "codigo_materia" : 1,"
+    "fecha_inscripcion": "2020-05-05T16:34:44.719+03:00"
 }
