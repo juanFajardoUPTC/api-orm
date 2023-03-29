@@ -3,11 +3,57 @@ const prisma = new PrismaClient()
 
 const getMaterias = async (req, res) => {
     try {
-        const materias = await prisma.materias.findMany();
-        res.json({ materias })
+        if (Object.keys(req.query).length === 0) {
+            // No hay parámetros en la solicitud
+            const materiasOne = await prisma.materias.findMany();
+            res.json(materiasOne);
+            console.log('entre en estudiantes 1');
+        } else {
+            console.log(req.query);
+            // Hay parámetros en la solicitud
+            const { columna, ordenamiento, busqueda } = req.query;
+            // letmateriasTwo = [];
+            console.log('entre en estudiantes 2');
+            if (busqueda) {
+                console.log('entre en estudiantes 2.1');
+                const {codigo,nombre,cupos,estado } = busqueda;
+                console.log('busqueda', busqueda);
+                if (typeof busqueda === 'string') {
+                   materiasTwo = await prisma.materias.findMany({
+                        where: {
+                            OR: [
+                                { nombre: { contains: busqueda } },
+                                { estado: { contains: busqueda } },
+                            ]
+                        },
+                        orderBy: {
+                            [columna]: ordenamiento,
+                        },
+                    });
+                    res.json(materiasTwo);
+                } else if (Number.isInteger(parseInt(busqueda))) {
+                    estudiantesT = await prisma.materias.findMany({
+                        where: {
+                            OR: [
+                                { codigo: { contains: (busqueda) } },
+                                { cupos: { contains: (busqueda) } }
+                            ]
+                        },
+                    });
+                    res.json(estudiantesT);
+                }
+            } else {
+                const materiasT = await prisma.materias.findMany({
+                    orderBy: {
+                        [columna]: ordenamiento,
+                    },
+                });
+                res.json(materiasT);
+            }
+        }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ mensaje: "Error al obtener la lista de materias" });
+        res.status(500).json({ mensaje: "Error al obtener la lista de estudiantes" });
     }
 }
 
