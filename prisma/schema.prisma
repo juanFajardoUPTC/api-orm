@@ -7,6 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model credenciales {
+  usuario    String   @id @db.VarChar(45)
+  contrasena String   @db.VarChar(45)
+  usuarios   usuarios @relation(fields: [usuario], references: [nombre_usuario], onDelete: Cascade, map: "credenciales_ibfk_1")
+}
+
 model estudiantes {
   codigo           Int             @id @default(autoincrement())
   nombre           String          @db.VarChar(45)
@@ -28,7 +34,6 @@ model inscripciones {
 
   @@index([codigo_estudiante], map: "codigo_estudiante")
   @@index([codigo_materia], map: "codigo_materia")
-  @@unique([codigo_estudiante,codigo_materia])
 }
 
 model materias {
@@ -37,4 +42,11 @@ model materias {
   cupos         Int?
   estado        String?         @db.VarChar(1)
   inscripciones inscripciones[]
+}
+
+model usuarios {
+  nombre_usuario     String        @id @db.VarChar(30)
+  correo_electronico String        @db.VarChar(45)
+  estado             Int           @db.TinyInt
+  credenciales       credenciales?
 }

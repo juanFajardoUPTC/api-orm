@@ -20,9 +20,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 const workEstiantes= require('./routes/routerEstudiantes');
 const workMaterias= require('./routes/routerMaterias');
 const workIncripciones= require('./routes/routerInscripciones');
+const workUsuarios= require('./routes/routerUsuarios');
+
+
 app.use('/estudiantes',workEstiantes);
 app.use('/materias',workMaterias);
 app.use('/inscripciones',workIncripciones);
+app.use('/usuarios',workUsuarios);
 
 const server = app.listen(app.get('port'), () => {
     console.log('Funciona en puerto: ', app.get('port'));
