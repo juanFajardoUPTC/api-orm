@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
+// Encriptar contraseña
 const saltRounds = 10;
 const jwt = require('jsonwebtoken');
 
@@ -35,26 +36,28 @@ const postCreateUser = async (req, res) => {
       return;
     }
     // Crear el usuario
-    const usuarioCreado = await prisma.usuarios.create({
+    const user = await prisma.usuarios.create({
       data: {
         nombre_usuario,
         correo_electronico,
         estado,
       },
-    });
+    })
+    console.log('entre ');
     // Crear las credenciales
-    const usuer = await prisma.usuario
-    const credencialesCreadas = await prisma.credenciales.create({
+    const creden= await prisma.credenciales.create({
       data: {
-        usuario: nombre_usuario,
+        usuario: correo_electronico,
         contrasena: await bcrypt.hash(credenciales.contrasena, saltRounds)
       },
     });
+    
+  
     // Devolver una respuesta JSON con el usuario creado
     res.status(201).json({
       message: 'Usuario creado correctamente',
       body: {
-        user: { nombre_usuario, correo_electronico, estado, credenciales: credencialesCreadas },
+        user: { nombre_usuario, correo_electronico, estado, credenciales: creden },
       },
     });
   } catch (error) {
@@ -71,22 +74,37 @@ const postLogin = async (req, res) => {
       res.status(400).send('Los parámetros requeridos no están presentes');
       return;
     }
+    console.log('entre ');
     // Verificar si el usuario ya existe
     const usuarioExistente = await prisma.credenciales.findFirst({
       where: {
         usuario: usuario,
       },
+      
     });
+    console.log('entre ');
     if (!usuarioExistente) {
       res.status(400).json({ error: 'Usuario no Registado/o usuario incorrecto' });
       return;
     }
-    // Verificar si la contraseña es correcta
+    // Verificar si la contraseña es correcta de otra manera
+    // devolver un error
+    bcrypt.compare(contrasena, usuarioExistente)
+  .then(result => {
+    if (result) {
+      console.log('La contraseña es correcta');
+    } else {
+      console.log('La contraseña es incorrecta');
+    }
+  })
     const contrasenaCorrecta = await bcrypt.compare(contrasena, usuarioExistente.contrasena);
+    console.log(usuarioExistente.contrasena)
+    console.log(contrasena)
     if (!contrasenaCorrecta) {
       res.status(400).json({ error: 'Contraseña incorrecta' });
       return;
     }
+  
     // Crear el token 
     const token = jwt.sign(
       {

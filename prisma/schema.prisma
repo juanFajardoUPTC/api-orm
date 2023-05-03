@@ -7,11 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model credenciales {
-  usuario    String   @id @db.VarChar(45)
-  contrasena String   @db.VarChar(45)
-  usuarios   usuarios @relation(fields: [usuario], references: [nombre_usuario], onDelete: Cascade, map: "credenciales_ibfk_1")
-}
+
 
 model estudiantes {
   codigo           Int             @id @default(autoincrement())
@@ -21,6 +17,7 @@ model estudiantes {
   numero_documento String          @db.VarChar(15)
   estado           String?         @db.VarChar(1)
   genero           String?         @db.VarChar(3)
+  path             String          @db.VarChar(200)
   inscripciones    inscripciones[]
 }
 
@@ -45,8 +42,14 @@ model materias {
 }
 
 model usuarios {
-  nombre_usuario     String        @id @db.VarChar(30)
-  correo_electronico String        @db.VarChar(45)
+  nombre_usuario     String        @db.VarChar(30)
+  correo_electronico String        @id @db.VarChar(45)
   estado             Int           @db.TinyInt
   credenciales       credenciales?
+}
+
+model credenciales {
+  usuario    String   @id @db.VarChar(45)
+  contrasena String   @db.VarChar(45)
+  usuarios   usuarios @relation(fields: [usuario], references: [correo_electronico], onDelete: Cascade, map: "credenciales_ibfk_1")
 }
