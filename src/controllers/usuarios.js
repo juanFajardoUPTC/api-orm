@@ -1,6 +1,6 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 // Encriptar contraseña
 const saltRounds = 10;
 const jwt = require('jsonwebtoken');
@@ -43,24 +43,38 @@ const postCreateUser = async (req, res) => {
         estado,
       },
     })
-    console.log('entre ');
-    // Crear las credenciales
-    const creden= await prisma.credenciales.create({
-      data: {
-        usuario: correo_electronico,
-        contrasena: await bcrypt.hash(credenciales.contrasena, saltRounds)
-      },
-    });
+    const saltRounds = 10;
+    bcrypt.hash(credenciales.contrasena, saltRounds, async function (err, hash) {
+      if (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Usuario no creado' });
+        return;
+      }
+      console.log(hash);
+      // Crear las credenciales con la contraseña encriptada
+      const creden = await prisma.credenciales.create({
+        data: {
+          usuario: correo_electronico,
+          contrasena: hash
+        },
+      });
+      /**valida si la contraseña que entre es */
+
+      // Devolver una respuesta JSON con el usuario creado
+      res.status(201).json({
+        message: 'Usuario creado correctamente',
+        body: {
+          user: { nombre_usuario, correo_electronico, estado, credenciales: creden.contrasena },
+        },
+      });
+      console.log(hash);
+    }
     
+    );
+    
+  }
   
-    // Devolver una respuesta JSON con el usuario creado
-    res.status(201).json({
-      message: 'Usuario creado correctamente',
-      body: {
-        user: { nombre_usuario, correo_electronico, estado, credenciales: creden },
-      },
-    });
-  } catch (error) {
+  catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Usuario no creado' });
   }
@@ -70,47 +84,26 @@ const postCreateUser = async (req, res) => {
 const postLogin = async (req, res) => {
   try {
     const { usuario, contrasena } = req.body;
-    if (!usuario || !contrasena) {
-      res.status(400).send('Los parámetros requeridos no están presentes');
-      return;
+    if (!(usuario && contrasena)) {
+      res.status(400).send("Los parámetros requeridos no están presentes");
     }
     console.log('entre ');
     // Verificar si el usuario ya existe
-    const usuarioExistente = await prisma.credenciales.findFirst({
-      where: {
-        usuario: usuario,
-      },
-      
+    const user = await prisma.credenciales.findUnique({ where: { usuario } });
+
+
+    bcrypt.compare(contrasena, user.contrasena, function (err, result) {
+      // result == true
+      console.log(result);
     });
-    console.log('entre ');
-    if (!usuarioExistente) {
-      res.status(400).json({ error: 'Usuario no Registado/o usuario incorrecto' });
-      return;
+    if (user && (await bcrypt.compare(contrasena, user.contrasena) == true)) {
+      console.log('contrasena correcta')
     }
-    // Verificar si la contraseña es correcta de otra manera
-    // devolver un error
-    bcrypt.compare(contrasena, usuarioExistente)
-  .then(result => {
-    if (result) {
-      console.log('La contraseña es correcta');
-    } else {
-      console.log('La contraseña es incorrecta');
-    }
-  })
-    const contrasenaCorrecta = await bcrypt.compare(contrasena, usuarioExistente.contrasena);
-    console.log(usuarioExistente.contrasena)
-    console.log(contrasena)
-    if (!contrasenaCorrecta) {
-      res.status(400).json({ error: 'Contraseña incorrecta' });
-      return;
-    }
-  
-    // Crear el token 
     const token = jwt.sign(
       {
-        usuario: usuarioExistente.usuario,
-        id: usuarioExistente.id,
-        contrasena:usuarioExistente.contrasena
+        usuario: user.usuario,
+        id: user.id,
+        contrasena: user.contrasena
       },
       process.env.JWT_SECRET,
       {
@@ -118,13 +111,13 @@ const postLogin = async (req, res) => {
       }
     );
     // Devolver una respuesta JSON con el usuario creado
+    user.token
     res.status(201).json({
       message: 'Usuario creado correctamente',
       body: {
-        user: { usuarioExistente, token },
+        user: { user ,token},
       },
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Sesion incorrecta/token no generado' });

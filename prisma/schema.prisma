@@ -50,6 +50,6 @@ model usuarios {
 
 model credenciales {
   usuario    String   @id @db.VarChar(45)
-  contrasena String   @db.VarChar(45)
+  contrasena String   @db.VarChar(60)
   usuarios   usuarios @relation(fields: [usuario], references: [correo_electronico], onDelete: Cascade, map: "credenciales_ibfk_1")
 }
