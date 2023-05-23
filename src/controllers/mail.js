@@ -87,7 +87,7 @@ const correoBody = `
             // }
             const mailOptions = {
                 from: 'cfbg1999@gmail.com',
-                to: 'cristian.becerra08@uptc.edu.co',
+                to: 'cesar.moreno04@uptc.edu.co',
                 subject: 'Inscripciones a materias',
                 text: contenidoCorreo,
                 html: correoBody
