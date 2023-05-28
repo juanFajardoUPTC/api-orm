@@ -25,61 +25,83 @@ const getEstudiantesConInscripcionesActuales = async (req, res) => {
         console.log(fechaActual, "= ", formattedFechaActual);
     }
     const fecha = new Date(formattedFechaActual);
+   
+    console.log(fecha);
     try {
         const estudiantes = await prisma.estudiantes.findMany({
             where: {
                 inscripciones: {
-                    some: {
-                        OR: [
-                            { fecha_inscripcion: { equals: fecha } },// Filtra las inscripciones con la fecha actual formateada
-                        ]
+                  some: {
+                    fecha_inscripcion: {
+                      equals: fecha
+                    }
+                  }
+                }
+              },
+            include: {
+                inscripciones: {
+                    include: {
+                        materias: true // Incluye la relación con las materias
                     }
                 }
-            },
-            include: {
-                inscripciones: true
             }
         });
+        usuarios = await prisma.usuarios.findMany({
+            select: {
+                correo_electronico: true
+            }
+        });
+        for (const usuario of usuarios) {
+            const { correo_electronico } = usuario;
+            
+        let tableBody = '';
         for (const estudiante of estudiantes) {
             const { nombre, apellido, numero_documento, inscripciones } = estudiante;
-           
-
-            let tableBody = '';
-            const inscripcionesString = JSON.stringify(inscripciones);
             // Generar las filas de la tabla para cada estudiante
-            const inscripcionesHtml = inscripciones.map(inscripcion => `<li>${inscripcion}</li>`).join('');
+            const inscripcionesHtml = inscripciones
+                .map(inscripcion => {
+                    const fechaInscripcion = new Date(inscripcion.fecha_inscripcion);
+                    const dia = (fechaInscripcion.getDate() + 1).toString().padStart(2, '0');
+                    const mes = (fechaInscripcion.getMonth() + 1).toString().padStart(2, '0');
+                    const anio = fechaInscripcion.getFullYear().toString();
+                    return `<li>${inscripcion.materias.nombre} - ${dia}/${mes}/${anio}</li>`;
+                })
+                .join('');// Modifica esta línea
             const row = `
-    <tr>
-      <td>${nombre}</td>
-      <td>${apellido}</td>
-      <td>${numero_documento}</td>
-      <td>
-        <ul>
-          ${inscripcionesHtml}
-        </ul>
-      </td>
-    </tr>
-  `;
+        <tr>
+          <td>${nombre}</td>
+          <td>${apellido}</td>
+          <td>${numero_documento}</td>
+          <td>
+            <ul>
+              ${inscripcionesHtml}
+            </ul>
+          </td>
+        </tr>
+      `;
 
             tableBody += row;
+
             // Generar el cuerpo completo del correo
-const correoBody = `
-<h2>Estimado ${"Admin"},\n\nlas incripciones por estudiantes del dia de hoy son las siguientes:\n\n </h2>
-<h2>Tabla de Estudiantes e Inscripciones</h2>
-<table>
-  <thead>
-    <tr>
-      <th>Nombre</th>
-      <th>Apellido</th>
-      <th>Número de Documento</th>
-      <th>Inscripciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    ${tableBody}
-  </tbody>
-</table>
-`;
+            const correoBody = `
+        <h2>Estimado ${"Admin"},\n\nlas incripciones por estudiantes del dia de hoy son las siguientes:\n\n </h2>
+        <h2>Tabla de Estudiantes e Inscripciones</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>Número de Documento</th>
+              <th>Inscripciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableBody}
+          </tbody>
+        </table>
+      `;
+
+
             // Crea el contenido del correo electrónico con las inscripciones del estudiante
             let contenidoCorreo = `Estimado ${"Admin"},\n\nlas incripciones por estudiantes del dia de hoy son las siguientes:\n\n`;
             // for (const estudiante of estudiantes) {
@@ -87,7 +109,7 @@ const correoBody = `
             // }
             const mailOptions = {
                 from: 'cfbg1999@gmail.com',
-                to: 'cesar.moreno04@uptc.edu.co',
+                to: correo_electronico,
                 subject: 'Inscripciones a materias',
                 text: contenidoCorreo,
                 html: correoBody
@@ -98,6 +120,7 @@ const correoBody = `
             const info = await transporter.sendMail(mailOptions);
             console.log(info)
         }
+    }  
         res.json(estudiantes);
     } catch (error) {
         console.error(error);
@@ -105,9 +128,6 @@ const correoBody = `
     }
 
 }
-
-
-
 
 module.exports = {
     getEstudiantesConInscripcionesActuales,

@@ -7,8 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
 model estudiantes {
   codigo           Int             @id @default(autoincrement())
   nombre           String          @db.VarChar(45)
@@ -53,3 +51,4 @@ model credenciales {
   contrasena String   @db.VarChar(60)
   usuarios   usuarios @relation(fields: [usuario], references: [correo_electronico], onDelete: Cascade, map: "credenciales_ibfk_1")
 }
+
