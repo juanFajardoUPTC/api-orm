@@ -1,64 +1,93 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
+const redis = require('redis');
 
+const client = redis.createClient(
+    URL = 'redisuptc.0ocpj9.clustercfg.use2.cache.amazonaws.com:6379',
+);
 const getEstudiantes = async (req, res) => {
     try {
-        if (Object.keys(req.query).length === 0) {
-            // No hay parámetros en la solicitud
-            const estudiantesOne = await prisma.estudiantes.findMany();
-            res.json(estudiantesOne);
-            console.log('entre en estudiantes 1');
+      // Fetch Data from Redis
+      const reply = await client.get("estudiantesOne");
+  
+      if (reply) {
+        // If data exists in Redis, return it and finish the response
+        return res.send(JSON.parse(reply));
+      }
+  
+      // Fetching Data from your database (Prisma)
+      let estudiantesData;
+      if (Object.keys(req.query).length === 0) {
+        // No parameters in the request
+        estudiantesData = await prisma.estudiantes.findMany();
+        console.log('entre en estudiantes 1');
+      } else {
+        console.log(req.query);
+        // Parameters in the request
+        const { columna, ordenamiento, busqueda } = req.query;
+        console.log('entre en estudiantes 2');
+        if (busqueda) {
+          console.log('entre en estudiantes 2.1');
+          const { codigo, apellido, nombre, tipo_documento, numero_documento, estado, genero } = busqueda;
+          console.log('busqueda', busqueda);
+          if (typeof busqueda === 'string') {
+            estudiantesData = await prisma.estudiantes.findMany({
+              where: {
+                OR: [
+                  { nombre: { contains: busqueda } },
+                  { apellido: { contains: busqueda } },
+                  { tipo_documento: { contains: busqueda } },
+                  { numero_documento: { contains: busqueda } },
+                  { estado: { contains: busqueda } },
+                  { genero: { contains: busqueda } },
+                ]
+              },
+              orderBy: {
+                [columna]: ordenamiento,
+              },
+            });
+          } else if (Number.isInteger(parseInt(busqueda))) {
+            estudiantesData = await prisma.estudiantes.findMany({
+              where: {
+                OR: [
+                  { codigo: { contains: (busqueda) } }
+                ]
+              },
+              orderBy: {
+                [columna]: ordenamiento,
+              },
+            });
+          }
         } else {
-            console.log(req.query);
-            // Hay parámetros en la solicitud
-            const { columna, ordenamiento, busqueda } = req.query;
-            // let estudiantesTwo = [];
-            console.log('entre en estudiantes 2');
-            if (busqueda) {
-                console.log('entre en estudiantes 2.1');
-                const { codigo, apellido, nombre, tipo_documento, numero_documento, estado, genero } = busqueda;
-                console.log('busqueda', busqueda);
-                if (typeof busqueda === 'string') {
-                    estudiantesTwo = await prisma.estudiantes.findMany({
-                        where: {
-                            OR: [
-                                { nombre: { contains: busqueda } },
-                                { apellido: { contains: busqueda } },
-                                { tipo_documento: { contains: busqueda } },
-                                { numero_documento: { contains: busqueda } },
-                                { estado: { contains: busqueda } },
-                                { genero: { contains: busqueda } },
-                            ]
-                        },
-                        orderBy: {
-                            [columna]: ordenamiento,
-                        },
-                    });
-                    res.json(estudiantesTwo);
-                } else if (Number.isInteger(parseInt(busqueda))) {
-                    estudiantesT = await prisma.estudiantes.findMany({
-                        where: {
-                            OR: [
-                                { codigo: { contains: (busqueda) } }
-                            ]
-                        },
-                    });
-                    res.json(estudiantesT);
-                }
-            } else {
-                const estudiantesOne = await prisma.estudiantes.findMany({
-                    orderBy: {
-                        [columna]: ordenamiento,
-                    },
-                });
-                res.json(estudiantesOne);
-            }
+          estudiantesData = await prisma.estudiantes.findMany({
+            orderBy: {
+              [columna]: ordenamiento,
+            },
+          });
         }
+      }
+  
+      // Save the results in Redis. The "EX" and 3600 sets an expiration of 1 hour
+      const saveResult = await client.setex(
+        "estudiantesOne",
+        3600,
+        JSON.stringify(estudiantesData)
+      );
+      console.log(saveResult);
+  
+      // Close the Redis client after all operations
+      client.disconnect();
+  
+      // Respond to the client with the data
+      res.json(estudiantesData);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ mensaje: "Error al obtener la lista de estudiantes" });
+      console.error(error);
+      res.status(500).json({ mensaje: "Error al obtener la lista de estudiantes" + error });
     }
-}
+  };
+  
+  
+  
 
 
 /**     try {
